@@ -5,6 +5,8 @@
 
 class ScalarConverter {
 public:
+  enum LIT_TYPE { UNKNOWN, CHAR, INT, FLOAT, DOUBLE };
+
   virtual void phantom() = 0;
   ScalarConverter();
   ScalarConverter(ScalarConverter const &);
