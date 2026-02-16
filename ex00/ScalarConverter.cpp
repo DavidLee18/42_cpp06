@@ -18,6 +18,7 @@ ScalarConverter::~ScalarConverter() {}
 
 void ScalarConverter::convert(const std::string &lit) {
   LIT_TYPE ty = UNKNOWN;
+  bool overflow = false;
   double val;
   if (lit.length() == 3 && lit[0] == '\'' && lit[2] == '\'')
     ty = CHAR, val = static_cast<double>(lit[1]);
@@ -26,11 +27,17 @@ void ScalarConverter::convert(const std::string &lit) {
   else if (lit.length() > 1) {
     const char *ptr = lit.c_str();
     val = std::strtod(lit.c_str(), const_cast<char **>(&ptr));
-    if (*ptr == 'f' && *(ptr + 1) == '\0')
+    if (*ptr == 'f' && *(ptr + 1) == '\0') {
       ty = FLOAT;
-    else if (*ptr == '\0') {
+      if (val > static_cast<double>(std::numeric_limits<int>::max()) ||
+          val < static_cast<double>(std::numeric_limits<int>::min()))
+        overflow = true;
+    } else if (*ptr == '\0') {
       ty = DOUBLE;
-      if (val - static_cast<int>(val) == 0)
+      if (val > static_cast<double>(std::numeric_limits<int>::max()) ||
+          val < static_cast<double>(std::numeric_limits<int>::min()))
+        overflow = true;
+      if (!overflow && val - static_cast<int>(val) == 0)
         ty = INT;
     }
   }
@@ -56,10 +63,15 @@ void ScalarConverter::convert(const std::string &lit) {
     std::cout << "this is int literal, which is " << static_cast<int>(val)
               << '.' << std::endl;
     std::cout << "as char: ";
-    if (!std::isprint(static_cast<int>(val)))
+    if (val <= static_cast<double>(std::numeric_limits<char>::max()) &&
+        val >= static_cast<double>(std::numeric_limits<char>::min()) &&
+        !std::isprint(static_cast<int>(val)))
       std::cout << "<non-displayable>" << std::endl;
-    else
+    else if (val <= static_cast<double>(std::numeric_limits<char>::max()) &&
+             val >= static_cast<double>(std::numeric_limits<char>::min()))
       std::cout << '\'' << static_cast<char>(val) << '\'' << std::endl;
+    else
+      std::cout << "<impossible: out of range>" << std::endl;
     std::cout << "as float: "
               << std::setprecision(std::numeric_limits<float>::digits10)
               << static_cast<float>(val) << 'f' << std::endl;
@@ -79,11 +91,19 @@ void ScalarConverter::convert(const std::string &lit) {
                 << std::setprecision(std::numeric_limits<double>::digits10)
                 << val << std::endl;
     } else {
-      if (!std::isprint(static_cast<int>(val)))
+      if (val <= static_cast<double>(std::numeric_limits<char>::max()) &&
+          val >= static_cast<double>(std::numeric_limits<char>::min()) &&
+          !std::isprint(static_cast<int>(val)))
         std::cout << "<non-displayable>" << std::endl;
-      else
+      else if (val <= static_cast<double>(std::numeric_limits<char>::max()) &&
+               val >= static_cast<double>(std::numeric_limits<char>::min()))
         std::cout << '\'' << static_cast<char>(val) << '\'' << std::endl;
-      std::cout << "as int: " << static_cast<int>(val) << std::endl;
+      else
+        std::cout << "<impossible: out of range>" << std::endl;
+      if (!overflow)
+        std::cout << "as int: " << static_cast<int>(val) << std::endl;
+      else
+        std::cout << "as int: <impossible: out of range>" << std::endl;
       std::cout << "as double: "
                 << std::setprecision(std::numeric_limits<double>::digits10)
                 << val << std::endl;
@@ -100,13 +120,21 @@ void ScalarConverter::convert(const std::string &lit) {
       std::cout << "as int: <impossible>" << std::endl;
       std::cout << "as float: "
                 << std::setprecision(std::numeric_limits<float>::digits10)
-                << val << std::endl;
+                << static_cast<float>(val) << 'f' << std::endl;
     } else {
-      if (!std::isprint(static_cast<int>(val)))
+      if (val <= static_cast<double>(std::numeric_limits<char>::max()) &&
+          val >= static_cast<double>(std::numeric_limits<char>::min()) &&
+          !std::isprint(static_cast<int>(val)))
         std::cout << "<non-displayable>" << std::endl;
-      else
+      else if (val <= static_cast<double>(std::numeric_limits<char>::max()) &&
+               val >= static_cast<double>(std::numeric_limits<char>::min()))
         std::cout << '\'' << static_cast<char>(val) << '\'' << std::endl;
-      std::cout << "as int: " << static_cast<int>(val) << std::endl;
+      else
+        std::cout << "<impossible: out of range>" << std::endl;
+      if (!overflow)
+        std::cout << "as int: " << static_cast<int>(val) << std::endl;
+      else
+        std::cout << "as int: <impossible: out of range>" << std::endl;
       std::cout << "as float: "
                 << std::setprecision(std::numeric_limits<float>::digits10)
                 << static_cast<float>(val) << 'f' << std::endl;

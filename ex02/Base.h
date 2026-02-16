@@ -4,6 +4,7 @@
 class Base {
 public:
   int field1;
+  Base();
   virtual ~Base();
 };
 
